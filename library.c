@@ -77,3 +77,113 @@ void afisare(Game *head,FILE *date_out)//afisare in fisier pt checker
         aux=aux->next;
     }
 }
+
+void create_count(int num_teams, Game **head)
+{
+    int count;
+    Game *aux;
+    aux=*head;
+
+    for(int j=0;j<num_teams && aux!=NULL;j++)
+    {
+        count=0;
+        for(int i=0;i<aux->num_particip;i++)
+            count+=aux->play[i].num_points;
+        aux->points=count;
+        aux=aux->next;
+    }
+}
+
+int powerOf2(int num_teams)
+{
+    int i=1;
+    
+    while(i*2<num_teams)
+        i=i*2;
+    
+    return i;
+}
+
+int minim_points(Game *head,int num_teams)
+{
+    int mini=head->points;
+    Game *aux;
+    aux=head;
+    aux=aux->next;
+
+    for(int i=0;i<num_teams-1;i++)
+    {
+        if(aux->points<mini)
+            mini=aux->points;
+        aux=aux->next;
+    }
+
+    return mini;
+}
+
+void delete_from_beggining(Game **head,int *num_teams)
+{
+    Game *aux;
+    aux=*head;
+    (*head)=(*head)->next;
+    free(aux);
+
+    (*num_teams)--;
+}
+
+void delete_from_list(Game *head, Game deleted, int *num_teams)
+{
+    Game *aux;
+    aux=head->next;
+
+    while(strcmp(aux->next->name_team,deleted.name_team)!=0)
+        aux=aux->next;
+
+    if(aux->next->next==NULL)
+    {
+        Game *help;
+        help=aux->next;
+        aux->next=NULL;
+        free(help);
+    }
+    else 
+        {
+            Game *help;
+            help=aux->next;
+            aux->next=aux->next->next;
+            free(help);
+        }
+    
+    (*num_teams)--;
+}
+
+void delete_list(Game **head)
+{
+    Game *aux;
+    aux=*head;
+
+    while((*head)!=NULL)
+    {
+        *head=(*head)->next;
+        free(aux);
+        aux=*head;
+    }
+    
+}
+
+void add_points(Game**head)
+{
+    Game *aux;
+    aux=*head;
+
+    while(aux!=NULL)
+    {
+        aux->points++;
+        aux=aux->next;
+    }
+}
+
+void create_queue(Game *head)
+{
+    
+}

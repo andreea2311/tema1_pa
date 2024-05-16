@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
     for(int i=0;i<5;i++)
     {
         fscanf(cerinte_in,"%d",&cerinte[i]);
+      //  printf("%d",cerinte[i]);
     }
 
     FILE* date_in;
@@ -31,20 +32,20 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    int num_teams;
+    Game *head; //declar capul listei si il initializez cu primul element din fisier
+    head=(Game*)malloc(sizeof(Game)); 
+    head->next=NULL;
+
     //verificare cerinta 1 si executarea ei
     if(cerinte[0]==1)
     {
-
-        int num_teams; //numarul de elemenete(echipe din fisier)
+         //numarul de elemenete(echipe din fisier)
         fscanf(date_in,"%d",&num_teams);
 
         char aux;//citeste pauza/end of life character
         fscanf(date_in,"%c",&aux);
         
-        Game *head; //declar capul listei si il initializez cu primul element din fisier
-        head=(Game*)malloc(sizeof(Game)); 
-        head->next=NULL;
-
         fscanf(date_in,"%d",&(*head).num_particip);//citesc numele de persoane din echipa
 
         fscanf(date_in,"%c",&aux);
@@ -65,9 +66,65 @@ int main(int argc, char* argv[])
         create_list(&head,date_in);
 
         //afisare in fisier
-        afisare(head,date_out);
+        if(cerinte[1]==0)
+        {
+            afisare(head,date_out);
+        }
     }
     
+    if(cerinte[1]==1)
+    {
+        create_count(num_teams,&head);
+        int power_two=powerOf2(num_teams);
+        int mini; 
+
+        while(num_teams>power_two)
+        {
+            mini=minim_points(head,num_teams);
+            
+            Game *aux;
+            aux=head;
+
+            int ok=0;
+            while(aux!=NULL && ok==0)
+            {
+                if(aux->points==mini && ok==0)
+                {
+                    if(aux==head)
+                        delete_from_beggining(&head,&num_teams);
+                    else delete_from_stack(head,*aux,&num_teams);
+                    ok=1;
+                }
+                if(aux!=NULL)
+                    aux=aux->next;
+            }
+
+        }
+        
+
+       
+
+        afisare(head,date_out);
+
+    }
+
+    if(cerinte[2]==1)
+    {
+
+    }
+
+    if(cerinte[3]==1)
+    {
+
+    }
+
+    if(cerinte[4]==1)
+    {
+
+    }
+
+    delete_stack(&head);
+
     //inchiderea tuturor fisierelor
     fclose(date_in);
     fclose(date_out);
