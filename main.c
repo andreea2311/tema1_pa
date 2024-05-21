@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
         fscanf(date_in,"%c",&aux);
         
         fscanf(date_in,"%d",&(*head).num_particip);//citesc numele de persoane din echipa
-
         fscanf(date_in,"%c",&aux);
 
         //citire nume echipa folosind o variabila ajutatoare
@@ -71,46 +70,85 @@ int main(int argc, char* argv[])
             afisare(head,date_out);
         }
     }
+
     
     if(cerinte[1]==1)
     {
         create_count(num_teams,&head);
         int power_two=powerOf2(num_teams);
         int mini; 
+        int ok;
 
         while(num_teams>power_two)
+       // for(num_teams;num_teams>power_two;num_teams--)
         {
             mini=minim_points(head,num_teams);
             
             Game *aux;
             aux=head;
 
-            int ok=0;
-            while(aux!=NULL && ok==0)
+            ok=0;
+            
+            while(ok==0)
             {
                 if(aux->points==mini && ok==0)
                 {
+                    /*
                     if(aux==head)
                         delete_from_beggining(&head,&num_teams);
-                    else delete_from_stack(head,*aux,&num_teams);
+                    else delete_from_list(head,*aux,&num_teams);
+                    ok=1;
+                    */
+
+                    delete_element(&head,aux,&num_teams);
                     ok=1;
                 }
+
                 if(aux!=NULL)
                     aux=aux->next;
             }
-
+    
+            //printf("au ramas %d elemente in head\n",num_teams);
         }
-        
-
-       
-
         afisare(head,date_out);
 
     }
 
+
     if(cerinte[2]==1)
     {
+        int round=1;
+        
+        afisare(head,date_out);
 
+        Queue *meci;
+        meci=create_queue();
+
+
+        Game *castigatori=create_stack();
+        Game *pierzatori=create_stack();
+
+        enqueue(head,meci);
+
+        while(num_teams)
+        {
+            afisare_runde(meci,round,date_out);
+            
+            castigatori=play_round(&num_teams,&round,meci,&pierzatori);
+
+            printf("%d",meci->front->team1->points);
+        return 0;
+
+            if(num_teams==8)
+            {
+                ;
+            }
+            afisare_winners(castigatori,round,date_out);
+
+            clear_stack(&castigatori);
+        }
+
+        
     }
 
     if(cerinte[3]==1)
@@ -123,7 +161,7 @@ int main(int argc, char* argv[])
 
     }
 
-    delete_stack(&head);
+    delete_list(&head);
 
     //inchiderea tuturor fisierelor
     fclose(date_in);

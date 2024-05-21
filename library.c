@@ -59,7 +59,7 @@ void crPlayerArray(Game **team,FILE* date_in)//creeaza vectorul de membrii
 
         fgets(aux,1,date_in);//read pause
 
-        fscanf(date_in,"%d",&((*team)->play[i].num_points));//citeste punctaj
+        fscanf(date_in,"%f",&((*team)->play[i].num_points));//citeste punctaj
 
         fgets(aux,1,date_in);//read end of line char
     }
@@ -157,6 +157,47 @@ void delete_from_list(Game *head, Game deleted, int *num_teams)
     (*num_teams)--;
 }
 
+void delete_element(Game **head, Game *delete, int *num_teams)
+{
+    if(delete==*head)
+    {
+        Game *aux;
+        aux=*head;
+        (*head)=(*head)->next;
+        free(aux);
+
+        (*num_teams)--;
+
+        return;
+    }
+
+    else 
+        {
+            Game *aux;
+            aux=(*head);
+
+            while(strcmp(aux->next->name_team,delete->name_team)!=0)
+                aux=aux->next;
+
+            if(aux->next->next==NULL)
+            {
+                Game *help;
+                help=aux->next;
+                aux->next=NULL;
+                free(help);
+            }
+            else 
+                {
+                    Game *help;
+                    help=aux->next;
+                    aux->next=aux->next->next;
+                    free(help);
+                }
+            
+            (*num_teams)--;
+        }
+}
+
 void delete_list(Game **head)
 {
     Game *aux;
@@ -183,7 +224,220 @@ void add_points(Game**head)
     }
 }
 
-void create_queue(Game *head)
+Queue* create_queue()
 {
+    Queue *meci;
+    meci=(Queue*)malloc(sizeof(Queue));
+
+    if(meci==NULL)
+    {
+        printf("Nu s a putut aloca - create_queue");
+        exit(1);
+    }
+
+    meci->front=meci->rear=NULL;
+
+    return meci;
+}
+
+void enqueue(Game *head, Queue *meci)
+{
+    Game *aux;
+    aux=head;
+
+    while(aux!=NULL)
+    {
+        Meci *newnode=(Meci*)malloc(sizeof(Meci));
+        if(newnode==NULL)
+        {
+            printf("Nu s-a putut aloca dinamic - enqueue");
+            exit(1);
+        }
+
+        newnode->team1=aux;
+        newnode->team2=aux->next;
+        newnode->next=NULL;
+        aux=aux->next->next;
+
+        if(meci->rear == NULL)
+            meci->front=newnode;
+        else 
+            {
+                (meci->rear)->next=newnode;
+                meci->rear=newnode;
+            }
+        
+        if(meci->front==NULL) meci->front=meci->rear;
+    }
+}
+
+void dequeue(Queue *meci)
+{
+    Meci *aux;
+
+    if(isEmptyQueue(meci)==1) return;
+
+    aux=meci->front;
+    meci->front=(meci->front)->next;
+
+    if(meci->front==NULL)
+        meci->rear=meci->front;
     
+    free(aux);
+}
+
+int isEmptyQueue(Queue *meci)
+{
+    return (meci->front==NULL);
+}
+
+Game* create_stack()
+{
+    Game *node;
+    node=(Game *)malloc(sizeof(Game));
+    if(node==NULL)
+    {
+        printf("Nu s a putut aloca - create_stack");
+        exit(1);
+    }
+
+    node->next=NULL;
+}
+
+int lenght(Game *castigatori)
+{
+    Game *aux;
+    aux=castigatori;
+
+    int contor=0;
+
+    while(aux!=NULL)
+    {
+        contor++;
+        aux=aux->next;
+    }
+
+    return contor;
+}
+
+void pop(Game **stack)
+{
+    Game *aux;
+    aux=*stack;
+
+    (*stack)=(*stack)->next;
+    free(aux);
+}
+
+void push(Game *node,Game **stack)
+{
+
+
+    Game *newnode;
+    newnode=(Game*)malloc(sizeof(Game));
+    if(newnode==NULL)
+    {
+        printf("Nu s a alocat - push");
+    }
+
+
+
+    strcpy(newnode->name_team,node->name_team);
+    newnode->num_particip=node->num_particip;
+    newnode->points=node->points;
+    newnode->play=node->play;
+    newnode->next=*stack;
+    *stack=newnode;
+}
+
+void clear_stack(Game **stack)
+{
+    Game*aux;
+    aux=*stack;
+
+    aux=*stack;
+    while(aux!=NULL)
+    {
+        *stack=(*stack)->next;
+        free(aux);
+        aux=*stack;
+    }
+}
+
+void afisare_runde(Queue *meci,int round, FILE *date_out)
+{
+
+    fprintf(date_out,"--- ROUND NO:%d\n",round);
+    int len;
+
+    Meci *aux;
+    aux=meci->front;
+
+    while(aux!=NULL)
+    {
+        len=strlen(aux->team1->name_team);
+        fprintf(date_out,"%s",aux->team1->name_team);
+        for(int i=0;i<33-len+1;i++)
+            fprintf(date_out," ");
+
+        fprintf(date_out,"-");
+        
+        len=strlen(aux->team2->name_team);
+        for(int i=0;i<33-len+1;i++)
+            fprintf(date_out," ");
+        fprintf(date_out,"%s\n",aux->team2->name_team);
+
+        aux=aux->next;
+    }
+}
+
+void afisare_winners(Game *castigatori,int round,FILE *date_out)
+{
+    int len;
+
+    fprintf(date_out,"WINNERS OF ROUND NO:%d\n",round);
+
+    while(castigatori!=NULL)
+    {
+        len=strlen(castigatori->name_team);
+        fprintf(date_out,"%s",castigatori->name_team);
+        for(int i=0;i<34-len+1;i++)
+            fprintf(date_out," ");
+        
+        fprintf(date_out,"-  %0.2f\n",castigatori->points);
+
+        castigatori=castigatori->next;
+    }
+}
+
+Game* play_round(int *num_teams,int *round,Queue *meci, Game **pierzatori)
+{
+    Game *castigatori;
+    castigatori=(Game*)malloc(sizeof(Game));
+    if(castigatori==NULL)
+    {
+        printf("Eroare la alocare - play round");
+        exit(1);
+    }
+
+    for(int i=(*num_teams);i>1;i=i/2)
+    {
+        if(meci->front->team1->points>meci->front->team2->points)
+        {
+            push(meci->front->team1,&castigatori);
+            push(meci->front->team2,pierzatori);            
+        }
+        else 
+            {
+                push(meci->front->team1,pierzatori);
+                push(meci->front->team2,&castigatori);
+            } 
+        
+        dequeue(meci);
+
+    }
+
+    round++;
+
+    return castigatori;
 }
