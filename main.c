@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     }
 
     int num_teams;
-    Game *head; //declar capul listei si il initializez cu primul element din fisier
+    Game *head = NULL; //declar capul listei si il initializez cu primul element din fisier
     head=(Game*)malloc(sizeof(Game)); 
     head->next=NULL;
 
@@ -46,17 +46,22 @@ int main(int argc, char* argv[])
         char aux;//citeste pauza/end of life character
         fscanf(date_in,"%c",&aux);
         
-        fscanf(date_in,"%d",&(*head).num_particip);//citesc numele de persoane din echipa
+        fscanf(date_in,"%d",&(*head).num_particip);//citesc numarul de persoane din echipa
         fscanf(date_in,"%c",&aux);
 
         //citire nume echipa folosind o variabila ajutatoare
         char nume[40];
         fgets(nume,40,date_in);
+
+        nume[strlen(nume)-1]='\0';
+        if(nume[strlen(nume)-2] == ' ')
+        {
+            nume[strlen(nume)-2] = '\0';
+        }
+      
         head->name_team=(char*)malloc(sizeof(char)*(strlen(nume)+1));
         strcpy(head->name_team,nume);
-    
-       // fscanf(date_in,"%d",&(head->num_particip));
-
+       
         //creare vector de playeri din echipa
         crPlayerArray(&head,date_in);
 
@@ -64,10 +69,19 @@ int main(int argc, char* argv[])
         for(int i=0;i<num_teams-1;i++)
         create_list(&head,date_in);
 
+        //delete_enter(&head);
+        //delete_spaces(&head);
+
         //afisare in fisier
         if(cerinte[1]==0)
         {
-            afisare(head,date_out);
+            Game *aux;
+            aux=head;
+            while(aux!=NULL)
+            {
+                fprintf(date_out,"%s\n",aux->name_team);
+                aux=aux->next;
+            }
         }
     }
 
@@ -77,7 +91,8 @@ int main(int argc, char* argv[])
         //creez campul cu media punctajelor
         create_count(num_teams,&head);
 
-        int power_two=powerOf2(num_teams);
+        int power_two=powerOf2(num_teams+1);
+       // printf("%d %d",num_teams,power_two);
         float mini; 
         int ok;
 
@@ -114,7 +129,10 @@ int main(int argc, char* argv[])
 
     if(cerinte[2]==1)
     { 
+        float n=head->points;
         make_media(&head,num_teams);
+        head->points=n;
+
         add_points(&head);
 
         //creez coada de meciuri
@@ -129,7 +147,7 @@ int main(int argc, char* argv[])
         meci->front=meci->rear=NULL;
 
         //introducerea tuturor elementelor in coada
-        int round=1;
+        int rund=1;
         Game *aux;
         aux=head;
         for(int i=0;i<num_teams;i=i+2)
@@ -137,65 +155,84 @@ int main(int argc, char* argv[])
             enqueue(aux,aux->next,meci);
             aux=aux->next->next;            
         }
-
-        Game *top8=create_stack();
-        top8->next=NULL;
+        
+        meci->front->team1->points=head->points;
+        Game *top8=NULL;
        
         //simulare meciuri si afisarea in fisier
-        while(num_teams*2!=1)
+        while(num_teams!=1)
         {   
             //se initializeaza stivele de castigatori/pierzatori
-            Game *castigatori=create_stack();
-            castigatori->next=NULL;
-            Game *pierzatori=create_stack();
-            pierzatori->next=NULL;
+            Game *castigatori=NULL;
+
+            Game *pierzatori=NULL;
 
             num_teams=num_teams/2;
-            afisare_runde(meci,round,date_out);
+            afisare_runde(meci,rund,date_out);
 
-            
             int contor=0;
-
-            printf("\n\n");
 
             while(contor<num_teams)
             {
-                runda(meci,&pierzatori,&castigatori);
+                Meci *help;
+                help=deQueue(meci);
 
-                if(round==2)
-                   printf("%s",castigatori->name_team);
+                runda(help,&pierzatori,&castigatori);
+                //printf("%s\n",castigatori->name_team);
 
-                dequeue(meci);
                 contor++;
             }
 
-            if(round==2)
-               afisare_castigatori(castigatori);
-            afisare_winners(castigatori,round,date_out);
+            fprintf(date_out,"WINNERS OF ROUND NO:%d\n",rund);
+
+            int len;
+            Game *copy;
+            copy=castigatori;
+
+            while(copy!=NULL)
+            {
+                len=strlen(copy->name_team);
+                for(int i=0;i<len-1;i++)
+                    fprintf(date_out,"%c",copy->name_team[i]);
+
+                for(int i=0;i<34-len+1;i++)
+                    fprintf(date_out," ");
+                
+                fprintf(date_out,"-  %0.2f\n",copy->points);
+
+                copy=copy->next;
+            }
+
 
             add_points(&castigatori);
 
+/*
             //se memoreaza ultimii 8 ramasi
             if(num_teams==8)
                 create_winners(castigatori,&top8);
+*/
+ 
 
+            rund++;
 
-            round++;
+            if(num_teams>1)
+                clear_stack(&pierzatori,num_teams);
 
-            clear_stack(&pierzatori);
             meci->front=NULL;
             meci->rear=NULL;
 
             aux=castigatori;
-            for(int i=0;i<num_teams;i=i+2)
+
+            for(int i=0;i<num_teams && num_teams>1;i=i+2)
             {
                 enqueue(aux,aux->next,meci);
                 aux=aux->next->next;
             }
+    
+            if(num_teams>1)
+                clear_stack(&castigatori,num_teams);
 
-            clear_stack(&castigatori);
         }
-        
     }
 
     if(cerinte[3]==1)
