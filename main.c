@@ -126,6 +126,7 @@ int main(int argc, char* argv[])
         afisare(head,date_out);
     }
 
+    Game *top8=NULL;
 
     if(cerinte[2]==1)
     { 
@@ -157,8 +158,7 @@ int main(int argc, char* argv[])
         }
         
         meci->front->team1->points=head->points;
-        Game *top8=NULL;
-       
+        
         //simulare meciuri si afisarea in fisier
         while(num_teams!=1)
         {   
@@ -172,17 +172,19 @@ int main(int argc, char* argv[])
 
             int contor=0;
 
+            //se simuleaza fiecare meci din runda si se afla castigatorul/pierzatorul
             while(contor<num_teams)
             {
                 Meci *help;
                 help=deQueue(meci);
 
                 runda(help,&pierzatori,&castigatori);
-                //printf("%s\n",castigatori->name_team);
 
                 contor++;
             }
 
+
+            //se afiseaza castigatorii
             fprintf(date_out,"WINNERS OF ROUND NO:%d\n",rund);
 
             int len;
@@ -203,18 +205,16 @@ int main(int argc, char* argv[])
                 copy=copy->next;
             }
 
-
+            //se adauga puncte 
             add_points(&castigatori);
 
-/*
             //se memoreaza ultimii 8 ramasi
             if(num_teams==8)
-                create_winners(castigatori,&top8);
-*/
- 
-
+                copy_stack(castigatori,&top8);
+            
             rund++;
 
+            //se elibereaza spatiile de memorie ocupate
             if(num_teams>1)
                 clear_stack(&pierzatori,num_teams);
 
@@ -223,6 +223,7 @@ int main(int argc, char* argv[])
 
             aux=castigatori;
 
+            //se reconstruieste urmatoarea coada de meciuri
             for(int i=0;i<num_teams && num_teams>1;i=i+2)
             {
                 enqueue(aux,aux->next,meci);
@@ -237,12 +238,65 @@ int main(int argc, char* argv[])
 
     if(cerinte[3]==1)
     {
+        //se creeaza arborele
+        Arbore *root;
+        root=(Arbore*)malloc(sizeof(Arbore));
+        if(root==NULL)
+        {
+            printf("Eroare la alocare - root");
+            exit(1);
+        }
+
+        root->value=top8;
+        root->left=NULL;
+        root->right=NULL;
+        
+        Game *aux=top8->next;
+
+        //se adauga nodurile din stiva
+        while(aux)
+        {
+            root=inserare_bst(aux,root);
+            aux=aux->next;
+        }
+
+        //se afiseaza in fisier
+        fprintf(date_out,"\nTOP 8 TEAMS:\n");
+        BST_print(root,date_out);
 
     }
 
     if(cerinte[4]==1)
     {
+        //se creeaza arborele
+        Arbore *root;
+        root=(Arbore*)malloc(sizeof(Arbore));
+        if(root==NULL)
+        {
+            printf("Eroare la alocare - root");
+            exit(1);
+        }
 
+        root->value=top8;
+        root->left=NULL;
+        root->right=NULL;
+        
+        Game *aux=top8->next;
+
+        //se adauga nodurile din stiva
+        while(aux)
+        {
+            root=inserare_bst(aux,root);
+            aux=aux->next;
+        }
+
+        //se afiseaza in fisier
+        fprintf(date_out,"\nTOP 8 TEAMS:\n");
+        BST_print(root,date_out);
+
+        
+
+        
     }
 
     delete_list(&head);

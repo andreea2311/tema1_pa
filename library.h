@@ -40,6 +40,15 @@ struct Queue
 
 typedef struct Queue Queue;
 
+struct Arbore
+{
+    Game *value;
+    struct Arbore *left;
+    struct Arbore *right;
+};
+
+typedef struct Arbore Arbore;
+
 void addAtBeggining(Game **head,Game *team);
 void create_list(Game **head,FILE *date_in);
 void crPlayerArray(Game **team,FILE* date_in);
@@ -58,10 +67,13 @@ void enqueue(Game *node1,Game *node2, Queue *meci);
 Meci* deQueue(Queue* q);
 int isEmptyQueue(Queue *meci);
 int lenght(Game *castigatori);
-void pop(Game **stack);
 void push(Game *node,Game **stack);
 int stackIsEmpty(Game* top);
 void clear_stack(Game **top,int num_teams);
 void afisare_runde(Queue *meci,int rund, FILE *date_out);
 void runda(Meci *node, Game **pierzatori, Game **castigatori);
 void create_winners(Game *castigatori,Game **top8);
+void copy_stack(Game *castigatori, Game ** top8);
+Arbore *create_node(Game *aux);
+Arbore * inserare_bst(Game *aux, Arbore*node);
+void BST_print(Arbore *root,FILE *date_out);

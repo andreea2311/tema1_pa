@@ -1,6 +1,5 @@
-
 #include "library.h"
-#pragma pack(8)
+
 void addAtBeggining(Game **head,Game *team) //adauga pe prima poz elem team primit parametru
 {
     Game *aux;
@@ -292,6 +291,11 @@ void enqueue(Game *node1,Game *node2, Queue *meci)
     
 }
 
+int isEmptyQueue(Queue *meci)
+{
+    return (meci->front==NULL);
+}
+
 Meci* deQueue(Queue* q){
     Meci* aux;
     if(isEmptyQueue(q)){
@@ -325,11 +329,6 @@ Meci* deQueue(Queue* q){
     return aux;
 }
 
-int isEmptyQueue(Queue *meci)
-{
-    return (meci->front==NULL);
-}
-
 int lenght(Game *castigatori)
 {
     Game *aux;
@@ -344,15 +343,6 @@ int lenght(Game *castigatori)
     }
 
     return contor;
-}
-
-void pop(Game **stack)
-{
-    Game *aux;
-    aux=*stack;
-
-    (*stack)=(*stack)->next;
-    free(aux);
 }
 
 void push(Game *node,Game **stack)
@@ -427,10 +417,100 @@ void runda(Meci *node, Game **pierzatori, Game **castigatori)
             }
 }
 
-void create_winners(Game *castigatori,Game **top8)
+void copy_stack(Game *castigatori, Game ** top8)
 {
-    Game *aux;
-    aux=castigatori;
+    Game *aux=castigatori;
 
+    for (int i = 0; i < 8; i++) 
+    {
+        Game *node = (Game *)malloc(sizeof(Game));
+        if (node == NULL) 
+        {
+            printf("Eroare la alocare - copy stack");
+            exit(1);
+        }
+
+        *node = *aux; // Shallow copy of the team structure
+        node->next = NULL;
+        push(node,top8);
+        aux=aux->next;
+    }
+
+}
+
+Arbore *create_node(Game *aux)
+{
+    Arbore *node=(Arbore *)malloc(sizeof(Arbore));
+    if(node==NULL)
+    {
+        printf("Nu s a alocat - create node");
+        exit(1);
+    }
+
+    node->value=aux;
+    node->left=NULL;
+    node->right=NULL;
+    return node;
+}
+
+Arbore * inserare_bst(Game *aux, Arbore*node)
+{
+    if(node==NULL) return create_node(aux);
+
+    if(aux->points<node->value->points)
+        node->right= inserare_bst(aux,node->right);
+        else if(aux->points > node->value->points)
+            node->left= inserare_bst(aux,node->left);
+        else 
+        {
+            if(strcmp(aux->name_team,node->value->name_team)>0)
+                node->left=inserare_bst(aux,node->left);
+                else node->right=inserare_bst(aux,node->right);
+        }
+
+        return node;
+}
+void BST_print(Arbore *root,FILE *date_out)
+{
+    if(root)
+    {
+        BST_print(root->left,date_out);
+        int len=strlen(root->value->name_team);
+        for(int i=0;i<len-1;i++)
+            fprintf(date_out,"%c",root->value->name_team[i]);
+        for(int i=0;i<34-len+1;i++)
+            fprintf(date_out," ");
+        
+        fprintf(date_out,"-  %0.2f\n",root->value->points-1);
+
+        BST_print(root->right,date_out);
+    }
+
+}
+
+Arbore *RightRotation(Arbore *node)
+{
+    Arbore *aux=node->left;
+    Arbore *help=aux->right;
+
+    aux->right=node;
+    node->left=help;
+
+    return aux;
+}
+
+Arbore *leftRotation(Arbore *node)
+{
+    Arbore *aux=node->right;
+    Arbore *help=aux->left;
+
+    aux->left=node;
+    node->right=help;
+
+    return aux;
+}
+
+int height(Arbore *root)
+{
     
 }
